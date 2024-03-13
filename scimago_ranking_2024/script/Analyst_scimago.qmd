@@ -1,0 +1,221 @@
+---
+format:
+  pdf:
+    toc: true
+    number-sections: true
+    colorlinks: true
+editor: visual
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r include=FALSE}
+# Cargamos las bibliotecas necesarias
+library(readxl)
+library(dplyr)
+library(ggplot2)
+```
+
+```{r include=FALSE}
+# Rutas de los archivos Excel
+setwd("E:/Talleres/AcademyMetrics/scimago_ranking_2024/data")
+
+
+datos <- read.csv("E:/Talleres/AcademyMetrics/scimago_ranking_2024/data/ScimagoIR 2024 - Research Rank.csv",sep=';')
+
+
+```
+
+## A nivel Mundial 
+
+Top 20 Países por Número de Instituciones
+
+```{r echo=FALSE}
+library(ggplot2)
+
+# Contar las instituciones por país y ordenarlas
+datos_paises <- as.data.frame(table(datos$Country))
+colnames(datos_paises) <- c("Country", "Count")
+datos_paises <- datos_paises[order(-datos_paises$Count),]
+
+# Gráfico de los top 20 países
+ggplot(datos_paises[1:20,], aes(x = reorder(Country, -Count), y = Count)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  theme_minimal() +
+  labs(title = "Top 20 Países por Número de Instituciones", x = "País", y = "Número de Instituciones") +
+  coord_flip()
+
+```
+
+Top 20 Instituciones de Gobierno a Nivel Mundial
+
+```{r echo=FALSE}
+library(dplyr)
+
+# Asumiendo que tu dataframe se llama 'datos' y ya está cargado
+top_20_gobierno_mundial <- datos %>%
+  filter(Sector == "Government") %>% # Filtramos por el sector de gobierno
+  arrange(Global_Rank) %>% # Ordenamos por el ranking global
+  slice(1:20) %>% # Seleccionamos las top 20
+  select(Institution, Country, Global_Rank) # Seleccionamos columnas de interés
+
+# Mostramos el resultado
+print(top_20_gobierno_mundial)
+
+```
+
+
+
+## A nivel América Latina
+
+Distribución de Instituciones por Sector en América Latina
+
+```{r echo=FALSE}
+library(ggplot2)
+library(dplyr)
+
+# Aseguramos que 'datos' esté cargado y contiene la columna 'Sector' y 'Country'
+
+# Filtrar los datos para América Latina
+library(dplyr)
+
+# Asegurando que 'datos' es tu dataframe cargado
+datos_la <- datos %>% 
+  filter(Country %in% c("ARG", "BOL", "BRA", "CHL", "COL",
+                        "CRI", "CUB", "ECU", "HND", "MEX",
+                        "PAN", "PRY", "PER", "PRI", "URY", "VEN"))
+
+# Contar las instituciones por sector en América Latina
+datos_sectores_la <- datos_la %>%
+  group_by(Sector) %>%
+  summarise(Count = n()) %>%
+  arrange(desc(Count))
+
+# Gráfico de la distribución de instituciones por sector en América Latina
+ggplot(datos_sectores_la, aes(x = reorder(Sector, Count), y = Count, fill = Sector)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(title = "Distribución de Instituciones por Sector en América Latina",
+       x = "Sector",
+       y = "Número de Instituciones") +
+  theme_minimal() +
+  scale_fill_viridis_d()
+
+
+```
+10 Primeras Universidades de Latinoamérica en Investigación
+
+```{r echo=FALSE}
+
+library(dplyr)
+
+# Filtramos por países de Latinoamérica y por el sector de universidades
+top_10_universidades_latam <- datos %>%
+  filter(Country %in% c("ARG", "BOL", "BRA", "CHL", "COL", "CRI", "CUB", "ECU", 
+                        "HND", "MEX", "PAN", "PRY", "PER", "PRI", "URY", "VEN"),
+         Sector == "Universities") %>%
+  arrange(Global_Rank) %>%
+  slice(1:10) # Seleccionamos las 10 primeras basadas en el ranking global
+
+# Mostramos el resultado
+print(top_10_universidades_latam)
+
+
+```
+
+
+10 Primeras Instituciones de Investigación en Latinoamérica
+
+```{r echo=FALSE}
+library(dplyr)
+
+# Filtramos por países de Latinoamérica y por el sector Government
+top_10_gobierno_latam <- datos %>%
+  filter(Country %in% c("ARG", "BOL", "BRA", "CHL", "COL", "CRI", "CUB", "ECU", 
+                        "HND", "MEX", "PAN", "PRY", "PER", "PRI", "URY", "VEN"),
+         Sector == "Government") %>%
+  arrange(Global_Rank) %>%
+  slice(1:10) %>% # Seleccionamos las 10 primeras basadas en el ranking global
+  select(Institution, Country, Global_Rank) # Seleccionamos solo las columnas de interés
+
+# Mostramos el resultado de manera clara
+print(top_10_gobierno_latam)
+
+
+
+```
+
+
+
+
+## A nivel Perú
+
+Ranking de las 10 Primeras Universidades del Perú en Investigación
+
+```{r echo=FALSE}
+library(ggplot2)
+library(dplyr)
+
+# Asegurándonos que 'datos' es tu DataFrame y que has cambiado el nombre de la columna a Global_Rank
+datos_universidades_peru <- datos %>%
+  filter(Country == "PER", Sector == "Universities") %>%
+  arrange(Global_Rank) %>%
+  head(10)
+
+# Generando el gráfico
+ggplot(datos_universidades_peru, aes(x = reorder(Institution, Global_Rank), y = Global_Rank)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Top 10 Universidades del Perú en Investigación",
+       x = "Universidad",
+       y = "Ranking Global") +
+  theme_minimal()
+
+
+```
+
+Ranking de las 10 Primeras Instituciones del Gobierno del Perú en Investigación
+
+```{r echo=FALSE}
+datos_gobierno_peru <- datos %>%
+  filter(Country == "PER", Sector == "Government") %>%
+  arrange(Global_Rank) %>%
+  head(10)
+
+ggplot(datos_gobierno_peru, aes(x = reorder(Institution, Global_Rank), y = Global_Rank)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = "Top 10 Instituciones de Gobierno del Perú en Investigación", x = "Institución", y = "Ranking Global") +
+  theme_minimal()
+
+```
+
+Estado de la Investigación en Perú Comparado con Otros Países de Latinoamérica
+
+```{r echo=FALSE}
+library(ggplot2)
+library(dplyr)
+
+datos_la <- datos %>%
+  filter(Country %in% c("ARG", "BOL", "BRA", "CHL", "COL", "CRI", "CUB", "ECU", "HND", "MEX", "PAN", "PRY", "PER", "PRI", "URY", "VEN")) %>%
+  group_by(Country) %>%
+  summarise(Total_Instituciones = n()) %>%
+  arrange(desc(Total_Instituciones))
+
+ggplot(datos_la, aes(x = reorder(Country, Total_Instituciones), y = Total_Instituciones, fill = Country)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = "Estado de la Investigación en Países de Latinoamérica", x = "País", y = "Total de Instituciones en el Ranking") +
+  theme_minimal() +
+  scale_fill_viridis_d() # Corregido, eliminando el argumento no necesario
+
+
+
+```
+
+
+
+
+
+
+
